@@ -7,6 +7,8 @@ import zlib
 import base64
 import subprocess
 import os
+import sys
+import traceback
 from xml.dom import minidom
 
 # GetCookie.xml
@@ -132,7 +134,7 @@ def checkForUpdate(pfn, categoryId, releaseType):
                     versions.append([gameVer, i[0], releaseType])
 
     if newVersion and gameVer:
-        print("New version found:", idt, gameVer)
+        print("New version detected:", idt, gameVer)
 
         commitMsg = "Minecraft " + gameVer
         if releaseType == 2:
@@ -150,6 +152,16 @@ def checkForUpdate(pfn, categoryId, releaseType):
         subprocess.run(["git", "add", "versions.json.min", "versions.txt"])
         subprocess.run(["git", "-c", "user.name='github-actions[bot]'", "-c", "user.email='github-actions[bot]@users.noreply.github.com'", "commit", "-m", commitMsg])
         subprocess.run(["git", "push", "origin"])
+
+        if os.getenv("ENABLE_NOTIFICATION"):
+            try:
+                import notification
+                cp = subprocess.run(["git", "rev-parse", "HEAD"], stdout=subprocess.PIPE)
+                commitId = cp.stdout.decode("utf-8").strip()
+                notification.pushNotification(pfn, gameVer, releaseType, commitId)
+            except:
+                print("Failed to push notification.")
+                traceback.print_exc()
     else:
         print(idt, "is up to date.")
 
