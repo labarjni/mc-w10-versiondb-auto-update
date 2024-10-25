@@ -28,14 +28,14 @@ def updateGlobalVariable() -> None:
     # update the global getCookieXml variable
     if not Global["getCookieXml"]:
         logger.debug("Updating getCookieXml variable...")
-        with open("getCookieXml.xml", "r", encoding = "utf-8") as file:
+        with open("xml/getCookie.xml", "r", encoding = "utf-8") as file:
             Global["getCookieXml"] = file.read()
         logger.debug("Updated getCookieXml variable.")
 
     # update the global wuidRequestXml variable
     if not Global["wuidRequestXml"]:
         logger.debug("Updating wuidRequestXml variable...")
-        with open("wuidRequestXml.xml", "r", encoding = "utf-8") as file:
+        with open("xml/wuidRequest.xml", "r", encoding = "utf-8") as file:
             Global["wuidRequestXml"] = file.read()
         logger.debug("Updated wuidRequestXml variable.")
 
@@ -198,10 +198,8 @@ def checkForUpdate(packageFamilyName: str, categoryId: str, releaseType: Release
             logger.info(f"New version found for {identityName}: {gameVersion}")
             commitMsg: str = "Minecraft " + gameVersion
             if releaseType == ReleaseType.Preview: commitMsg += " (Preview)"
-            result: subprocess.CompletedProcess[str] = subprocess.run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True, text=True)
-            latest_tag: int = int(result.stdout.strip()[1:]) + 1 if result.stdout.strip().startswith('v') else 1
         
-            with open("versions.json.min", "w", encoding="utf-8") as file: json.dump(versions, file, indent=4, ensure_ascii=False)
+            with open("versions.json.min", "w", encoding="utf-8") as file: json.dump(versions, file, ensure_ascii=False)
             with open("versions.txt", "r") as file:
                 verTxt: str = file.read()
                 start: int = verTxt.find("\n\n", verTxt.find(releaseType.name)) + 1
@@ -211,10 +209,6 @@ def checkForUpdate(packageFamilyName: str, categoryId: str, releaseType: Release
             subprocess.run(["git", "add", "versions.json.min", "versions.txt"])
             subprocess.run(["git", "-c", "user.name='github-actions[bot]'", "-c", "user.email='github-actions[bot]@users.noreply.github.com'", "commit", "-m", commitMsg])
             subprocess.run(["git", "push", "origin"])
-
-            # Add the new tag
-            subprocess.run(["git", "tag", f"v{latest_tag}"])
-            subprocess.run(["git", "push", "origin", f"v{latest_tag}"])
 
             if os.getenv("ENABLE_NOTIFICATION"):
                 try:
