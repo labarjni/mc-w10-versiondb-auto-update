@@ -69,7 +69,7 @@ def updateGlobalVariable() -> None:
                 output: minidom.Document = minidom.parseString(urllib.request.urlopen(request, context = Global["unverifiedContext"], timeout = Global["timeout"]).read())
                 Global["cookie"] = output.getElementsByTagName("EncryptedData")[0].firstChild.nodeValue
             except Exception as error: logger.error(f"Error occurred while obtain cookie variable. Error: {error}")
-        logger.debug(f"Updated cookie variable. value: {Global["cookie"]}")
+        logger.debug(f"Updated cookie variable. value: {Global['cookie']}")
 
     logger.debug("Updated global variable.")
 
@@ -185,7 +185,7 @@ def checkForUpdate(packageFamilyName: str, categoryId: str, releaseType: Release
 
         for info in getCurrentVersionInfo(packageFamilyName, categoryId):
             if identityName not in info["packageMoniker"]: continue
-            updateTxt += f"{info["updateId"]} {info["packageMoniker"]} {info["id"]}\n"
+            updateTxt += f"{info['updateId']} {info['packageMoniker']} {info['id']}\n"
             match info["arch"]:
                 case "x64":
                     gameVersion: str = appxVersionToGameVersion(info["version"])
