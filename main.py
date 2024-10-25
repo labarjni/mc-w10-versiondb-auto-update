@@ -1,6 +1,8 @@
-import os, urllib, urllib.request, ssl, enum, html, json, subprocess, traceback
+import os, urllib, urllib.request, ssl, enum, html, json, subprocess, traceback, logging
 from xml.dom import minidom
-from loguru import logger
+
+logging.basicConfig(level = logging.INFO, format = "%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s", datefmt = "%Y-%m-%d %H:%M:%S")
+logger = logging.getLogger(__name__)
 
 Global = {
     "MaximumRetry": 3, # Maximum retry
@@ -12,7 +14,7 @@ Global = {
     "debug": False
 }
 """ Global variable """
-if Global["debug"]: logger.level("DEBUG")
+if Global["debug"]: logger.setLevel(logging.DEBUG)
 
 class ReleaseType(enum.Enum):
     """ release type """
@@ -162,7 +164,7 @@ def appVersionToStr(version: str, withFifth: bool = False) -> str:
     """
     arr = version.split(".")
     if (n := 4 - len(arr[2])) > 0: arr[2] = ("0" * n) + arr[2]
-    return f"{arr[0]}.{arr[1]}.{arr[2][:-2]}.{arr[2][-2:]}" + ("." + arr[3] if withFifth else "")
+    return f"{int(arr[0])}.{int(arr[1])}.{int(arr[2][:-2])}.{int(arr[2][-2:])}" + (f".{int(arr[3])}" if withFifth else "")
 
 def checkForUpdate(packageFamilyName: str, categoryId: str, releaseType: ReleaseType) -> None:
     """
