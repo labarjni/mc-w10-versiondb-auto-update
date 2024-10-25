@@ -5,7 +5,7 @@ logging.basicConfig(level = logging.INFO, format = "%(asctime)s.%(msecs)03d - %(
 logger = logging.getLogger(__name__)
 
 Global = {
-    "MaximumRetry": 3, # Maximum retry
+    "maximumRetry": 3, # Maximum retry
     "timeout": 20, # Timeout
     "cookie": None,
     "unverifiedContext": None,
@@ -53,13 +53,13 @@ def updateGlobalVariable() -> None:
     if not Global["cookie"]:
         logger.debug("Updating cookie variable...")
         Global["cookie"] = os.getenv("COOKIE")
-        for count in range(Global["MaximumRetry"] + 1, -1, -1):
+        for count in range(Global["maximumRetry"] + 1, -1, -1):
             try:
                 if Global["cookie"]: break
                 if count == 0:
                     logger.error("Cookie acquisition exceeded the maximum number of times and is exiting")
                     exit(1)
-                if count < Global["MaximumRetry"]: logger.warning("Failed to obtain the cookie. Trying again...")
+                if count < Global["maximumRetry"]: logger.warning("Failed to obtain the cookie. Trying again...")
 
                 request: urllib.request.Request = urllib.request.Request(
                     "https://fe3.delivery.mp.microsoft.com/ClientWebService/client.asmx",
@@ -104,9 +104,9 @@ def getUpdates(categoryId: str) -> str:
         data = Global["wuidRequestXml"].format(cookie = Global["cookie"], categoryId = categoryId, releaseType = "Retail").encode("utf-8"),
         headers = {"Content-Type": "application/soap+xml; charset=utf-8"}
     )
-    for count in range(Global["MaximumRetry"] + 1, -1, -1):
+    for count in range(Global["maximumRetry"] + 1, -1, -1):
         if count == 0: raise Exception("getUpdates failed.")
-        if count < Global["MaximumRetry"]: logger.warning("getUpdates failed. Retrying...")
+        if count < Global["maximumRetry"]: logger.warning("getUpdates failed. Retrying...")
         try: return html.unescape(urllib.request.urlopen(request, context = Global["unverifiedContext"], timeout = Global["timeout"]).read().decode("utf-8"))
         except Exception as error: logger.error(f"Error occurred while getting updates. Error:{error}")
     raise Exception("getUpdates failed.")
@@ -152,7 +152,7 @@ def getCurrentVersionInfo(packageFamilyName: str, categoryId: str) -> list[dict[
     logger.debug("Got current version info.")
     return versions
 
-def appVersionToStr(version: str, withFifth: bool = False) -> str:
+def appxVersionToGameVersion(version: str, withFifth: bool = False) -> str:
     """
     Convert version string format
 
@@ -188,7 +188,7 @@ def checkForUpdate(packageFamilyName: str, categoryId: str, releaseType: Release
             updateTxt += f"{info["updateId"]} {info["packageMoniker"]} {info["id"]}\n"
             match info["arch"]:
                 case "x64":
-                    gameVersion: str = appVersionToStr(info["version"])
+                    gameVersion: str = appxVersionToGameVersion(info["version"])
                     for version in versions:
                         if ReleaseType(version[2]) == releaseType and version[0] == gameVersion:
                             newVersion: bool = False
